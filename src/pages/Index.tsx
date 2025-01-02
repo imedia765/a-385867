@@ -12,15 +12,20 @@ import { Tables } from '@/integrations/supabase/types';
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  const { data: members, isLoading } = useQuery({
+  const { data: members, isLoading, error } = useQuery({
     queryKey: ['members'],
     queryFn: async () => {
+      console.log('Fetching members...');
       const { data, error } = await supabase
         .from('members')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching members:', error);
+        throw error;
+      }
+      console.log('Fetched members:', data);
       return data as Tables<'members'>[];
     },
   });
@@ -69,9 +74,11 @@ const Index = () => {
             <div className="space-y-4">
               {isLoading ? (
                 <div className="text-center py-4">Loading members...</div>
-              ) : (
-                members?.map((member) => (
-                  <div key={member.id} className="dashboard-card p-4">
+              ) : error ? (
+                <div className="text-center py-4 text-red-500">Error loading members: {error.message}</div>
+              ) : members && members.length > 0 ? (
+                members.map((member) => (
+                  <div key={member.id} className="bg-card p-4 rounded-lg border shadow-sm">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white">
@@ -79,13 +86,13 @@ const Index = () => {
                         </div>
                         <div>
                           <p className="font-medium">{member.full_name}</p>
-                          <p className="text-sm text-gray-400">{member.email || 'No email provided'}</p>
+                          <p className="text-sm text-muted-foreground">{member.email || 'No email provided'}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="flex flex-col items-end">
                           <span className="text-sm font-medium">Member #{member.member_number}</span>
-                          <span className="text-sm text-gray-400">{member.membership_type || 'Standard'}</span>
+                          <span className="text-sm text-muted-foreground">{member.membership_type || 'Standard'}</span>
                         </div>
                         <div className={`px-2 py-1 rounded-full text-xs ${
                           member.status === 'active' 
@@ -98,6 +105,8 @@ const Index = () => {
                     </div>
                   </div>
                 ))
+              ) : (
+                <div className="text-center py-4">No members found</div>
               )}
             </div>
           </>
@@ -143,7 +152,7 @@ const Index = () => {
                       <p className="font-medium">Language</p>
                       <p className="text-sm text-gray-400">Select your language</p>
                     </div>
-                    <select className="bg-transparent border border-white/10 rounded-md px-2 py-1">
+                    <select className="bg-transparent border rounded-md px-2 py-1">
                       <option value="en">English</option>
                       <option value="es">Spanish</option>
                       <option value="fr">French</option>

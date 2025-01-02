@@ -12,7 +12,7 @@ import { Tables } from '@/integrations/supabase/types';
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  const { data: members, isLoading, error } = useQuery({
+  const { data: members, isLoading: membersLoading, error: membersError } = useQuery({
     queryKey: ['members'],
     queryFn: async () => {
       console.log('Fetching members...');
@@ -20,7 +20,7 @@ const Index = () => {
         .from('members')
         .select('*')
         .order('created_at', { ascending: false })
-        .throwOnError(); // This will help catch any errors
+        .throwOnError();
       
       if (error) {
         console.error('Error fetching members:', error);
@@ -28,6 +28,24 @@ const Index = () => {
       }
       console.log('Fetched members:', data);
       return data as Tables<'members'>[];
+    },
+  });
+
+  const { data: collectors, isLoading: collectorsLoading, error: collectorsError } = useQuery({
+    queryKey: ['collectors'],
+    queryFn: async () => {
+      console.log('Fetching collectors...');
+      const { data, error } = await supabase
+        .from('collector_stats')
+        .select('*')
+        .throwOnError();
+      
+      if (error) {
+        console.error('Error fetching collectors:', error);
+        throw error;
+      }
+      console.log('Fetched collectors:', data);
+      return data;
     },
   });
 
@@ -73,10 +91,10 @@ const Index = () => {
               <p className="text-dashboard-muted">View and manage member information</p>
             </header>
             <div className="space-y-4">
-              {isLoading ? (
+              {membersLoading ? (
                 <div className="text-center py-4">Loading members...</div>
-              ) : error ? (
-                <div className="text-center py-4 text-red-500">Error loading members: {error.message}</div>
+              ) : membersError ? (
+                <div className="text-center py-4 text-red-500">Error loading members: {membersError.message}</div>
               ) : members && members.length > 0 ? (
                 <div className="grid gap-4">
                   {members.map((member) => (
@@ -113,6 +131,50 @@ const Index = () => {
                 </div>
               ) : (
                 <div className="text-center py-4">No members found</div>
+              )}
+            </div>
+          </>
+        );
+      case 'collectors':
+        return (
+          <>
+            <header className="mb-8">
+              <h1 className="text-3xl font-medium mb-2">Collectors</h1>
+              <p className="text-dashboard-muted">View all collectors and their assigned members</p>
+            </header>
+            <div className="space-y-4">
+              {collectorsLoading ? (
+                <div className="text-center py-4">Loading collectors...</div>
+              ) : collectorsError ? (
+                <div className="text-center py-4 text-red-500">Error loading collectors: {collectorsError.message}</div>
+              ) : collectors && collectors.length > 0 ? (
+                <div className="grid gap-4">
+                  {collectors.map((collector) => (
+                    <div 
+                      key={collector.collector_id} 
+                      className="bg-dashboard-card p-4 rounded-lg border border-white/10 hover:border-white/20 transition-all duration-300"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-dashboard-accent2 flex items-center justify-center text-white">
+                            {collector.collector?.charAt(0) || 'C'}
+                          </div>
+                          <div>
+                            <p className="font-medium text-white">{collector.collector}</p>
+                            <p className="text-sm text-dashboard-text">ID: {collector.collector_id}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="px-3 py-1 rounded-full bg-dashboard-accent1/20 text-dashboard-accent1">
+                            {collector.member_count} members
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4">No collectors found</div>
               )}
             </div>
           </>

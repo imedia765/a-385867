@@ -31,21 +31,39 @@ const Index = () => {
     },
   });
 
+  // Updated query to get collectors from members table
   const { data: collectors, isLoading: collectorsLoading, error: collectorsError } = useQuery({
     queryKey: ['collectors'],
     queryFn: async () => {
       console.log('Fetching collectors...');
       const { data, error } = await supabase
-        .from('collector_stats')
+        .from('members')
         .select('*')
+        .eq('role', 'collector')
         .throwOnError();
       
       if (error) {
         console.error('Error fetching collectors:', error);
         throw error;
       }
-      console.log('Fetched collectors:', data);
-      return data;
+
+      // Get member count for each collector
+      const collectorsWithCounts = await Promise.all(
+        (data || []).map(async (collector) => {
+          const { count } = await supabase
+            .from('members')
+            .select('*', { count: 'exact', head: true })
+            .eq('collector_id', collector.id);
+          
+          return {
+            ...collector,
+            member_count: count || 0
+          };
+        })
+      );
+
+      console.log('Fetched collectors with counts:', collectorsWithCounts);
+      return collectorsWithCounts;
     },
   });
 
@@ -119,8 +137,8 @@ const Index = () => {
                           </div>
                           <div className={`px-2 py-1 rounded-full text-xs ${
                             member.status === 'active' 
-                              ? 'bg-dashboard-accent3/20 text-dashboard-accent3' 
-                              : 'bg-dashboard-muted/20 text-dashboard-muted'
+                              ? 'bg-green-500/20 text-green-500' 
+                              : 'bg-gray-500/20 text-gray-400'
                           }`}>
                             {member.status || 'Pending'}
                           </div>
@@ -151,21 +169,21 @@ const Index = () => {
                 <div className="grid gap-4">
                   {collectors.map((collector) => (
                     <div 
-                      key={collector.collector_id} 
+                      key={collector.id} 
                       className="bg-dashboard-card p-4 rounded-lg border border-white/10 hover:border-white/20 transition-all duration-300"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-dashboard-accent2 flex items-center justify-center text-white">
-                            {collector.collector?.charAt(0) || 'C'}
+                          <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center text-white">
+                            {collector.full_name?.charAt(0) || 'C'}
                           </div>
                           <div>
-                            <p className="font-medium text-white">{collector.collector}</p>
-                            <p className="text-sm text-dashboard-text">ID: {collector.collector_id}</p>
+                            <p className="font-medium text-white">{collector.full_name}</p>
+                            <p className="text-sm text-dashboard-text">ID: {collector.id}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="px-3 py-1 rounded-full bg-dashboard-accent1/20 text-dashboard-accent1">
+                          <div className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-400">
                             {collector.member_count} members
                           </div>
                         </div>

@@ -1,18 +1,27 @@
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Download, Upload, AlertCircle } from "lucide-react";
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import BackupStats from './BackupStats';
 
 const BackupRestore = () => {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [backupData, setBackupData] = useState(null);
+  const [restoreProgress, setRestoreProgress] = useState(0);
+  const [restoredItems, setRestoredItems] = useState({
+    members: 0,
+    collectors: 0,
+    roles: 0
+  });
 
   const generateBackup = async () => {
     try {
@@ -20,6 +29,8 @@ const BackupRestore = () => {
       const { data, error } = await supabase.rpc('generate_full_backup');
       
       if (error) throw error;
+
+      setBackupData(data);
 
       // Create and download the backup file
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -54,16 +65,38 @@ const BackupRestore = () => {
 
     try {
       setIsRestoring(true);
+      setRestoreProgress(0);
+      setRestoredItems({
+        members: 0,
+        collectors: 0,
+        roles: 0
+      });
+
       const reader = new FileReader();
       
       reader.onload = async (e) => {
         try {
           const backupData = JSON.parse(e.target?.result as string);
+          setBackupData(backupData);
+          
+          // Simulate progress for different stages
+          setRestoreProgress(25);
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
           const { error } = await supabase.rpc('restore_from_backup', {
             backup_data: backupData
           });
 
           if (error) throw error;
+
+          // Update restored items count
+          setRestoredItems({
+            members: backupData.members?.length || 0,
+            collectors: backupData.members_collectors?.length || 0,
+            roles: backupData.user_roles?.length || 0
+          });
+          
+          setRestoreProgress(100);
 
           toast({
             title: "Restore Completed",
@@ -134,6 +167,24 @@ const BackupRestore = () => {
           </Button>
         </div>
       </div>
+
+      {isRestoring && (
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <span>Restore Progress</span>
+            <span>{restoreProgress}%</span>
+          </div>
+          <Progress value={restoreProgress} className="h-2" />
+        </div>
+      )}
+
+      {backupData && (
+        <BackupStats 
+          data={backupData}
+          isRestoring={isRestoring}
+          restoredItems={restoredItems}
+        />
+      )}
     </div>
   );
 };

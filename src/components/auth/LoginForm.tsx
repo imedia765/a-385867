@@ -41,31 +41,60 @@ const LoginForm = () => {
       const email = `${memberNumber.toLowerCase()}@temp.com`;
       const password = memberNumber;
 
-      // First try to sign up the user
-      console.log('Attempting to create user account');
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            member_number: memberNumber,
-          }
-        }
-      });
-
-      // If sign up fails because user exists, or after successful signup, try to sign in
+      // Try to sign in first
       console.log('Attempting to sign in');
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (signInError) {
+      // If sign in fails due to invalid credentials, try to sign up
+      if (signInError && signInError.message === 'Invalid login credentials') {
+        console.log('Sign in failed, attempting to create account');
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              member_number: memberNumber,
+            }
+          }
+        });
+
+        if (signUpError && signUpError.message !== 'User already registered') {
+          console.error('Sign up error:', signUpError);
+          throw signUpError;
+        }
+
+        // Try signing in again after signup attempt
+        console.log('Attempting final sign in');
+        const { data: finalSignInData, error: finalSignInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (finalSignInError) {
+          console.error('Final sign in error:', finalSignInError);
+          throw finalSignInError;
+        }
+
+        if (finalSignInData.user) {
+          // Update member with auth_user_id if not already set
+          const { error: updateError } = await supabase
+            .from('members')
+            .update({ auth_user_id: finalSignInData.user.id })
+            .eq('id', member.id)
+            .is('auth_user_id', null);
+
+          if (updateError) {
+            console.error('Error updating member with auth_user_id:', updateError);
+            // Don't throw here as the login was successful
+          }
+        }
+      } else if (signInError) {
         console.error('Sign in error:', signInError);
         throw signInError;
-      }
-
-      if (signInData.user) {
+      } else if (signInData.user) {
         // Update member with auth_user_id if not already set
         const { error: updateError } = await supabase
           .from('members')

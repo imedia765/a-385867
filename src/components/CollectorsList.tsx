@@ -11,6 +11,7 @@ import {
 import TotalCount from "@/components/TotalCount";
 import CollectorMembers from "@/components/CollectorMembers";
 import PrintButtons from "@/components/PrintButtons";
+import { PostgrestError } from '@supabase/supabase-js';
 
 type MemberCollector = Database['public']['Tables']['members_collectors']['Row'];
 type Member = Database['public']['Tables']['members']['Row'];
@@ -90,12 +91,13 @@ const CollectorsList = () => {
   if (collectorsLoading) return <div className="text-center py-4">Loading collectors...</div>;
   if (collectorsError) {
     console.error('Collectors error:', collectorsError);
+    const postgrestError = collectorsError as PostgrestError;
     return (
       <div className="text-center py-4 text-red-500">
-        Error loading collectors: {collectorsError.message}
-        {collectorsError.details && (
+        Error loading collectors: {postgrestError.message}
+        {postgrestError.details && (
           <div className="text-sm mt-2">
-            Details: {collectorsError.details}
+            Details: {postgrestError.details}
           </div>
         )}
       </div>

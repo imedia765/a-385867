@@ -3,7 +3,7 @@ import RoleBadge from "./RoleBadge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Shield } from "lucide-react";
+import { Shield, CheckCircle2 } from "lucide-react";
 import { useQuery } from '@tanstack/react-query';
 
 interface MembershipDetailsProps {
@@ -11,7 +11,6 @@ interface MembershipDetailsProps {
   userRole: string | null;
 }
 
-// Define the allowed role types to match the database enum
 type AppRole = 'admin' | 'collector' | 'member';
 
 const MembershipDetails = ({ memberProfile, userRole }: MembershipDetailsProps) => {
@@ -41,6 +40,7 @@ const MembershipDetails = ({ memberProfile, userRole }: MembershipDetailsProps) 
 
   // Use the actual role from the database if available, otherwise fall back to the passed userRole
   const displayRole = actualRole || userRole;
+  const isAdmin = displayRole === 'admin';
 
   const handleRoleChange = async (newRole: AppRole) => {
     if (!memberProfile.auth_user_id) {
@@ -61,7 +61,7 @@ const MembershipDetails = ({ memberProfile, userRole }: MembershipDetailsProps) 
 
       if (deleteError) throw deleteError;
 
-      // Then insert new role with proper typing
+      // Then insert new role
       const { error: insertError } = await supabase
         .from('user_roles')
         .insert({
@@ -89,16 +89,27 @@ const MembershipDetails = ({ memberProfile, userRole }: MembershipDetailsProps) 
     <div className="space-y-2">
       <p className="text-dashboard-muted text-sm">Membership Details</p>
       <div className="space-y-2">
-        <p className="text-dashboard-text flex items-center gap-2">
-          Status:{' '}
-          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-            memberProfile?.status === 'active' 
-              ? 'bg-dashboard-accent3/20 text-dashboard-accent3' 
-              : 'bg-dashboard-muted/20 text-dashboard-muted'
-          }`}>
-            {memberProfile?.status || 'Pending'}
-          </span>
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-dashboard-text flex items-center gap-2">
+            Status:{' '}
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+              memberProfile?.status === 'active' 
+                ? 'bg-dashboard-accent3/20 text-dashboard-accent3' 
+                : 'bg-dashboard-muted/20 text-dashboard-muted'
+            }`}>
+              {memberProfile?.status || 'Pending'}
+              {memberProfile?.status === 'active' && (
+                <CheckCircle2 className="w-4 h-4 ml-1 text-dashboard-accent3" />
+              )}
+            </span>
+          </p>
+          {isAdmin && (
+            <span className="bg-dashboard-accent1/20 text-dashboard-accent1 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+              <Shield className="w-3 h-3" />
+              Admin
+            </span>
+          )}
+        </div>
         <p className="text-dashboard-text flex items-center gap-2">
           <span className="text-dashboard-accent2">Type:</span>
           <span className="flex items-center gap-2">

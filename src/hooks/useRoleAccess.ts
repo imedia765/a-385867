@@ -21,7 +21,6 @@ export const useRoleAccess = () => {
       }
 
       console.log('Session user in central role check:', session.user.id);
-      console.log('User metadata:', session.user.user_metadata);
 
       // First try to get role from user_roles table
       const { data: roleData, error: roleError } = await supabase
@@ -32,6 +31,12 @@ export const useRoleAccess = () => {
 
       if (roleError) {
         console.error('Error fetching role from user_roles:', roleError);
+        toast({
+          title: "Error fetching role",
+          description: roleError.message,
+          variant: "destructive",
+        });
+        throw roleError;
       }
 
       if (roleData?.role) {

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from '@/integrations/supabase/types';
-import { UserCheck, Users } from 'lucide-react';
+import { UserCheck, Users, CreditCard, Link2, AlertCircle } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -11,7 +11,6 @@ import {
 import TotalCount from "@/components/TotalCount";
 import CollectorMembers from "@/components/CollectorMembers";
 import PrintButtons from "@/components/PrintButtons";
-import { PostgrestError } from '@supabase/supabase-js';
 
 type MemberCollector = Database['public']['Tables']['members_collectors']['Row'];
 type Member = Database['public']['Tables']['members']['Row'];
@@ -46,41 +45,42 @@ const CollectorsList = () => {
           phone,
           active,
           created_at,
-          updated_at
+          updated_at,
+          member_profile_id,
+          collector_profile_id
         `)
         .order('number', { ascending: true });
       
       if (collectorsError) {
         console.error('Error fetching collectors:', collectorsError);
-        console.error('Error details:', {
-          message: collectorsError.message,
-          details: collectorsError.details,
-          hint: collectorsError.hint
-        });
         throw collectorsError;
       }
 
-      console.log('Collectors data received:', collectorsData);
-
-      if (!collectorsData || collectorsData.length === 0) {
-        console.log('No collectors found in the database');
-        return [];
-      }
-
-      const collectorsWithCounts = await Promise.all(collectorsData.map(async (collector) => {
-        console.log('Calculating member count for collector:', collector.name);
+      const collectorsWithCounts = await Promise.all(collectorsData?.map(async (collector) => {
         const { count } = await supabase
           .from('members')
           .select('*', { count: 'exact', head: true })
           .eq('collector', collector.name);
+
+        // Only fetch member number if member_profile_id exists
+        let memberNumber = null;
+        if (collector.member_profile_id) {
+          const { data: memberData } = await supabase
+            .from('members')
+            .select('member_number')
+            .eq('id', collector.member_profile_id)
+            .maybeSingle();
+          
+          memberNumber = memberData?.member_number || null;
+        }
         
         return {
           ...collector,
-          memberCount: count || 0
+          memberCount: count || 0,
+          memberNumber
         };
-      }));
+      }) || []);
 
-      console.log('Final collectors with counts:', collectorsWithCounts);
       return collectorsWithCounts;
     },
   });
@@ -89,21 +89,8 @@ const CollectorsList = () => {
   const totalMembers = collectors?.reduce((total, collector) => total + (collector.memberCount || 0), 0) || 0;
 
   if (collectorsLoading) return <div className="text-center py-4">Loading collectors...</div>;
-  if (collectorsError) {
-    console.error('Collectors error:', collectorsError);
-    const postgrestError = collectorsError as PostgrestError;
-    return (
-      <div className="text-center py-4 text-red-500">
-        Error loading collectors: {postgrestError.message}
-        {postgrestError.details && (
-          <div className="text-sm mt-2">
-            Details: {postgrestError.details}
-          </div>
-        )}
-      </div>
-    );
-  }
-  if (!collectors?.length) return <div className="text-center py-4">No collectors found in the database. Please add collectors first.</div>;
+  if (collectorsError) return <div className="text-center py-4 text-red-500">Error loading collectors: {collectorsError.message}</div>;
+  if (!collectors?.length) return <div className="text-center py-4">No collectors found</div>;
 
   return (
     <div className="space-y-4">
@@ -147,6 +134,17 @@ const CollectorsList = () => {
                       <UserCheck className="w-4 h-4" />
                       <span>Collector</span>
                       <span className="text-purple-400">({collector.memberCount} members)</span>
+                      {collector.memberNumber ? (
+                        <span className="flex items-center gap-1 text-green-400">
+                          <Link2 className="w-3 h-3" />
+                          Member #{collector.memberNumber}
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-yellow-400">
+                          <AlertCircle className="w-3 h-3" />
+                          No member number linked
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

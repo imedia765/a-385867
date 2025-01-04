@@ -15,17 +15,17 @@ const CollectorResponsibilities = () => {
         <ClipboardList className="w-4 h-4" />
         <span>View Collector Responsibilities</span>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[80vh]">
+      <DialogContent className="max-w-3xl max-h-[80vh] bg-[#F1F0FB]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold mb-4">PWA Collector Member Responsibilities - V1 April 2024</DialogTitle>
+          <DialogTitle className="text-2xl font-bold mb-4 text-[#221F26]">PWA Collector Member Responsibilities - V1 April 2024</DialogTitle>
         </DialogHeader>
         <ScrollArea className="h-[60vh] pr-4">
-          <div className="space-y-6 text-dashboard-text">
-            <p className="text-lg">A Collector member is a senior member of the PWA who is responsible for a specific number of paying members who are part of the death committee.</p>
+          <div className="space-y-6">
+            <p className="text-lg text-[#403E43]">A Collector member is a senior member of the PWA who is responsible for a specific number of paying members who are part of the death committee.</p>
             
             <div className="space-y-4">
-              <h3 className="font-semibold text-white text-lg">The Collector will be responsible for the following:</h3>
-              <ol className="list-decimal list-inside space-y-3 pl-4">
+              <h3 className="font-semibold text-[#221F26] text-lg">The Collector will be responsible for the following:</h3>
+              <ol className="list-decimal list-inside space-y-3 pl-4 text-[#333333]">
                 <li>Act as the representative of the death committee for each member on their list.</li>
                 <li>Act as first point of contact for any enquiries from members or prospective members.</li>
                 <li>Register new members with the death committee.</li>

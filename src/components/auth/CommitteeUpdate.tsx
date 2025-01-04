@@ -1,11 +1,15 @@
 import MembershipInformation from "./MembershipInformation";
+import CollectorResponsibilities from "./CollectorResponsibilities";
 
 const CommitteeUpdate = () => {
   return (
     <div className="bg-dashboard-card rounded-lg shadow-lg p-8 mb-12">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-white">Committee Update</h2>
-        <MembershipInformation />
+        <div className="flex items-center gap-4">
+          <MembershipInformation />
+          <CollectorResponsibilities />
+        </div>
       </div>
       <div className="text-dashboard-text space-y-4">
         <p>The committee has been working hard to improve our services and make sure we're meeting the needs of our community.</p>

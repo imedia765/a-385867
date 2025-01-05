@@ -37,14 +37,24 @@ const PaymentDialog = ({ memberProfile }: PaymentDialogProps) => {
           Make a Payment
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-dashboard-card text-dashboard-text">
+      <DialogContent className="sm:max-w-[425px] bg-dashboard-card border-dashboard-accent1/20">
         <DialogHeader>
-          <DialogTitle className="text-white">Make a Payment</DialogTitle>
+          <DialogTitle className="text-dashboard-accent2">Make a Payment</DialogTitle>
+          <div className="space-y-1 mt-2">
+            <p className="text-dashboard-accent1 text-sm">
+              Member #{memberProfile?.member_number}
+            </p>
+            {memberProfile?.collector && (
+              <p className="text-dashboard-text text-sm">
+                Collector: {memberProfile.collector}
+              </p>
+            )}
+          </div>
         </DialogHeader>
         
         <div className="grid gap-6 py-4">
           <div className="space-y-4">
-            <Label className="text-white">Payment Type</Label>
+            <Label className="text-dashboard-accent2">Payment Type</Label>
             <RadioGroup
               defaultValue="yearly"
               onValueChange={(value) => setPaymentType(value as 'yearly' | 'emergency')}
@@ -52,41 +62,41 @@ const PaymentDialog = ({ memberProfile }: PaymentDialogProps) => {
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="yearly" id="yearly" />
-                <Label htmlFor="yearly">Yearly Payment</Label>
+                <Label htmlFor="yearly" className="text-dashboard-text">Yearly Payment</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="emergency" id="emergency" />
-                <Label htmlFor="emergency">Emergency Payment</Label>
+                <Label htmlFor="emergency" className="text-dashboard-text">Emergency Payment</Label>
               </div>
             </RadioGroup>
           </div>
 
           {paymentType === 'yearly' ? (
             <div className="space-y-2">
-              <Label>Amount Due</Label>
-              <div className="text-lg font-medium">
+              <Label className="text-dashboard-accent2">Amount Due</Label>
+              <div className="text-lg font-medium text-dashboard-accent1">
                 {formatCurrency(memberProfile?.yearly_payment_amount || 40)}
               </div>
-              <div className="text-sm text-dashboard-muted">
+              <div className="text-sm text-dashboard-text">
                 Due Date: {memberProfile?.yearly_payment_due_date || 'January 1st, 2025'}
               </div>
             </div>
           ) : (
             <div className="space-y-2">
-              <Label htmlFor="amount">Amount</Label>
+              <Label htmlFor="amount" className="text-dashboard-accent2">Amount</Label>
               <Input
                 id="amount"
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="Enter amount"
-                className="bg-white/5 border-white/10"
+                className="bg-white/5 border-white/10 text-dashboard-text placeholder:text-dashboard-muted"
               />
             </div>
           )}
 
           <div className="space-y-4">
-            <Label>Payment Method</Label>
+            <Label className="text-dashboard-accent2">Payment Method</Label>
             <RadioGroup
               defaultValue="bank"
               onValueChange={(value) => setPaymentMethod(value as 'bank' | 'cash')}
@@ -94,16 +104,16 @@ const PaymentDialog = ({ memberProfile }: PaymentDialogProps) => {
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="bank" id="bank" />
-                <Label htmlFor="bank">Bank Transfer</Label>
+                <Label htmlFor="bank" className="text-dashboard-text">Bank Transfer</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="cash" id="cash" />
-                <Label htmlFor="cash">Cash</Label>
+                <Label htmlFor="cash" className="text-dashboard-text">Cash</Label>
               </div>
             </RadioGroup>
           </div>
 
-          <Button onClick={handlePayment} className="w-full">
+          <Button onClick={handlePayment} className="w-full bg-dashboard-accent1 hover:bg-dashboard-accent1/80">
             Proceed with Payment
           </Button>
         </div>

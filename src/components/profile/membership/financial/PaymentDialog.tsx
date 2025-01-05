@@ -44,9 +44,9 @@ const PaymentDialog = ({ memberProfile }: PaymentDialogProps) => {
             <p className="text-dashboard-accent1 text-sm">
               Member #{memberProfile?.member_number}
             </p>
-            {memberProfile?.collector && (
+            {memberProfile?.collector_id && (
               <p className="text-dashboard-text text-sm">
-                Collector: {memberProfile.collector}
+                Collector ID: {memberProfile.collector_id}
               </p>
             )}
           </div>
@@ -111,6 +111,23 @@ const PaymentDialog = ({ memberProfile }: PaymentDialogProps) => {
                 <Label htmlFor="cash" className="text-dashboard-text">Cash</Label>
               </div>
             </RadioGroup>
+
+            {paymentMethod === 'bank' && (
+              <div className="mt-4 p-4 bg-white/5 rounded-lg border border-dashboard-accent1/20">
+                <h4 className="text-dashboard-accent2 font-medium mb-2">Bank Details</h4>
+                <div className="space-y-2 text-dashboard-text text-sm">
+                  <p>HSBC Pakistan Welfare Association Burton On Trent</p>
+                  <div className="flex justify-between">
+                    <span>Sort Code:</span>
+                    <span className="font-medium">40-15-31</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Account Number:</span>
+                    <span className="font-medium">41024892</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <Button onClick={handlePayment} className="w-full bg-dashboard-accent1 hover:bg-dashboard-accent1/80">

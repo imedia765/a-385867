@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Clipboard, Plus, X } from 'lucide-react';
 import MemberDetails from './analyzer/MemberDetails';
 import UserRoles from './analyzer/UserRoles';
 import CollectorInfo from './analyzer/CollectorInfo';
 import DatabaseConfig from './analyzer/DatabaseConfig';
-import { Clipboard, Plus, X } from 'lucide-react';
+import SecurityAnalysis from './analyzer/SecurityAnalysis';
 
 interface AnalysisResult {
   memberDetails?: any;
@@ -114,27 +115,24 @@ const MemberAnalyzer = () => {
           }
         }
 
-        // 4. Fetch database configuration (only for single member analysis)
-        let dbConfigData = null;
-        if (memberNumbers.length === 1) {
-          const { data: tables, error: tablesError } = await supabase
-            .rpc('get_tables_info');
+        // 4. Fetch database configuration and security info
+        const { data: tables, error: tablesError } = await supabase
+          .rpc('get_tables_info');
 
-          const { data: policies, error: policiesError } = await supabase
-            .rpc('get_rls_policies');
+        const { data: policies, error: policiesError } = await supabase
+          .rpc('get_rls_policies');
 
-          if (tablesError) {
-            errors.push(`Tables query error: ${tablesError.message}`);
-          }
-          if (policiesError) {
-            errors.push(`Policies query error: ${policiesError.message}`);
-          }
-
-          dbConfigData = {
-            tables: tables || [],
-            policies: policies || []
-          };
+        if (tablesError) {
+          errors.push(`Tables query error: ${tablesError.message}`);
         }
+        if (policiesError) {
+          errors.push(`Policies query error: ${policiesError.message}`);
+        }
+
+        const dbConfigData = {
+          tables: tables || [],
+          policies: policies || []
+        };
 
         newResults[i] = {
           memberDetails: memberData || null,
@@ -161,33 +159,6 @@ const MemberAnalyzer = () => {
         : "Analysis completed successfully",
       variant: newResults.some(r => r?.errors.length > 0) ? "destructive" : "default",
     });
-  };
-
-  const findDifferences = () => {
-    if (results.length < 2) return null;
-
-    const differences: Record<string, any> = {};
-    const firstMember = results[0]?.memberDetails;
-
-    if (!firstMember) return null;
-
-    results.slice(1).forEach((result, index) => {
-      const currentMember = result?.memberDetails;
-      if (!currentMember) return;
-
-      differences[memberNumbers[index + 1]] = Object.entries(firstMember)
-        .reduce((acc: Record<string, any>, [key, value]) => {
-          if (currentMember[key] !== value) {
-            acc[key] = {
-              first: value,
-              current: currentMember[key]
-            };
-          }
-          return acc;
-        }, {});
-    });
-
-    return differences;
   };
 
   return (
@@ -237,7 +208,7 @@ const MemberAnalyzer = () => {
         
         {results.length > 0 && (
           <ScrollArea className="h-[500px] w-full rounded-md border mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+            <div className="grid grid-cols-1 gap-4 p-4">
               {results.map((result, index) => result && (
                 <div key={index} className="space-y-4 border rounded-lg p-4">
                   <div className="flex justify-between items-center">
@@ -267,24 +238,10 @@ const MemberAnalyzer = () => {
                   <MemberDetails memberDetails={result.memberDetails} />
                   <UserRoles roles={result.userRoles || []} />
                   <CollectorInfo collectorStatus={result.collectorStatus} />
-                  {memberNumbers.length === 1 && (
-                    <DatabaseConfig 
-                      tables={result.dbConfig?.tables || []} 
-                      policies={result.dbConfig?.policies || []} 
-                    />
-                  )}
+                  <SecurityAnalysis dbConfig={result.dbConfig} />
                 </div>
               ))}
             </div>
-
-            {results.length > 1 && (
-              <div className="p-4 border-t">
-                <h3 className="text-lg font-semibold mb-4">Differences Analysis</h3>
-                <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto">
-                  {JSON.stringify(findDifferences(), null, 2)}
-                </pre>
-              </div>
-            )}
           </ScrollArea>
         )}
       </CardContent>

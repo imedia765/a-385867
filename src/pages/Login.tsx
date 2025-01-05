@@ -15,11 +15,6 @@ const Login = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        // First clear any existing invalid session
-        const { error: signOutError } = await supabase.auth.signOut();
-        if (signOutError) console.error('Error clearing session:', signOutError);
-
-        // Then check for a valid session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -41,20 +36,21 @@ const Login = () => {
       }
     };
 
-    checkSession();
-
     // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, session?.user?.id);
       
       if (event === 'SIGNED_IN' && session?.user) {
         navigate('/');
       } else if (event === 'SIGNED_OUT') {
-        navigate('/login');
+        // Don't navigate on sign out since we're already on login page
+        console.log('User signed out');
       } else if (event === 'TOKEN_REFRESHED') {
         console.log('Token refreshed successfully');
       }
     });
+
+    checkSession();
 
     // Cleanup subscription on unmount
     return () => {

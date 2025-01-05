@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import RegularPayment from "./financial/RegularPayment";
 import YearlyPayment from "./financial/YearlyPayment";
 import PaymentTimeline from "./financial/PaymentTimeline";
+import PaymentDialog from "./financial/PaymentDialog";
 
 interface FinancialDetailsProps {
   memberProfile: Member;
@@ -16,7 +17,10 @@ const FinancialDetails = ({ memberProfile }: FinancialDetailsProps) => {
   return (
     <div className="space-y-8">
       <div className="space-y-6">
-        <p className="text-dashboard-muted text-sm font-medium">Financial Information</p>
+        <div className="flex items-center justify-between">
+          <p className="text-dashboard-muted text-sm font-medium">Financial Information</p>
+          <PaymentDialog memberProfile={memberProfile} />
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Emergency Collection Alert - Moved to top */}

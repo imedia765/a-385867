@@ -6,6 +6,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ClipboardList, Activity } from 'lucide-react';
 import AuditLogsList from './logs/AuditLogsList';
 import MonitoringLogsList from './logs/MonitoringLogsList';
+import { AuditLog } from '@/types/audit';
+import { MonitoringLog } from '@/types/monitoring';
 
 const AuditLogsView = () => {
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
@@ -32,7 +34,11 @@ const AuditLogsView = () => {
       }
 
       addDebugLog(`Fetched ${data?.length || 0} audit logs`);
-      return data;
+      return data?.map(log => ({
+        ...log,
+        old_values: log.old_values as Record<string, any> | null,
+        new_values: log.new_values as Record<string, any> | null
+      })) as AuditLog[];
     },
   });
 
@@ -54,7 +60,10 @@ const AuditLogsView = () => {
       }
 
       addDebugLog(`Fetched ${data?.length || 0} monitoring logs`);
-      return data;
+      return data?.map(log => ({
+        ...log,
+        details: log.details as Record<string, any> | null
+      })) as MonitoringLog[];
     },
   });
 

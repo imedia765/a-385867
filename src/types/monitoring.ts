@@ -9,10 +9,10 @@ export type MonitoringEventType =
 
 export interface MonitoringLog {
   id: string;
-  timestamp: string;
+  timestamp: string | null;
   event_type: MonitoringEventType;
   metric_name: string;
   metric_value: number;
-  details?: Record<string, any>;
-  severity: SeverityLevel;
+  details?: Record<string, any> | null;
+  severity: SeverityLevel | null;
 }

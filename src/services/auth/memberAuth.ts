@@ -54,8 +54,11 @@ export const loginOrSignupMember = async (memberNumber: string) => {
   const email = `${memberNumber.toLowerCase()}@temp.com`;
   const password = memberNumber;
 
+  console.log('Attempting auth with:', { email: email.replace(/@.*$/, '@[hidden]') });
+
   try {
     // Try to sign in first
+    console.log('Attempting sign in...');
     const signInResult = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -66,6 +69,7 @@ export const loginOrSignupMember = async (memberNumber: string) => {
       
       if (signInResult.error.message === 'Invalid login credentials') {
         // If sign in fails, try to sign up
+        console.log('Attempting signup...');
         const signUpResult = await supabase.auth.signUp({
           email,
           password,
@@ -85,6 +89,7 @@ export const loginOrSignupMember = async (memberNumber: string) => {
           throw new Error('Failed to create user account');
         }
 
+        console.log('Signup successful');
         return {
           data: signUpResult.data,
           error: null
@@ -93,6 +98,7 @@ export const loginOrSignupMember = async (memberNumber: string) => {
       throw signInResult.error;
     }
 
+    console.log('Sign in successful');
     return {
       data: signInResult.data,
       error: null

@@ -28,6 +28,8 @@ export const useLoginForm = () => {
 
       while (currentTry < maxRetries) {
         try {
+          console.log('Attempting login/signup - try', currentTry + 1);
+          
           // First verify member exists
           const member = await findMemberByNumber(formattedMemberNumber);
           
@@ -35,14 +37,26 @@ export const useLoginForm = () => {
             throw new Error('Member not found. Please check your member number.');
           }
 
-          // Attempt login/signup
+          console.log('Member found:', member);
+
+          // Attempt login/signup with better error handling
           const { data: authData, error: authError } = await loginOrSignupMember(formattedMemberNumber);
           
-          if (authError) throw authError;
-          if (!authData.user) throw new Error('Failed to authenticate user');
+          if (authError) {
+            console.error('Auth error details:', authError);
+            throw authError;
+          }
+
+          if (!authData?.user) {
+            console.error('No user data returned');
+            throw new Error('Failed to authenticate user');
+          }
+
+          console.log('Auth successful:', authData);
 
           // If we have a user and they're new, update their member record
           if (authData.user && member && !member.auth_user_id) {
+            console.log('Updating member with auth_user_id');
             const { error: updateError } = await supabase
               .from('members')
               .update({ auth_user_id: authData.user.id })
@@ -56,8 +70,16 @@ export const useLoginForm = () => {
 
           // Verify session is established
           const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-          if (sessionError) throw sessionError;
-          if (!session) throw new Error('Failed to establish session');
+          if (sessionError) {
+            console.error('Session error:', sessionError);
+            throw sessionError;
+          }
+          if (!session) {
+            console.error('No session established');
+            throw new Error('Failed to establish session');
+          }
+
+          console.log('Session established successfully');
 
           // Success! Invalidate queries and redirect
           await queryClient.invalidateQueries();

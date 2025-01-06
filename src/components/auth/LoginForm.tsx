@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from '@tanstack/react-query';
+import { Loader2 } from "lucide-react";
 
 const LoginForm = () => {
   const [memberNumber, setMemberNumber] = useState('');
@@ -15,10 +16,11 @@ const LoginForm = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loading) return; // Prevent multiple submissions
+    if (loading) return;
     
     setLoading(true);
-    console.log('Starting login process on device type:', window.innerWidth <= 768 ? 'mobile' : 'desktop');
+    const isMobile = window.innerWidth <= 768;
+    console.log('Starting login process on device type:', isMobile ? 'mobile' : 'desktop');
 
     try {
       // First, verify member exists
@@ -35,7 +37,6 @@ const LoginForm = () => {
       }
 
       if (!members || members.length === 0) {
-        console.error('Member not found');
         throw new Error('Member not found');
       }
 
@@ -108,6 +109,10 @@ const LoginForm = () => {
         throw signInError;
       }
 
+      // Clear any existing queries before proceeding
+      await queryClient.cancelQueries();
+      await queryClient.clear();
+
       // Verify session is established
       console.log('Verifying session...');
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -133,7 +138,11 @@ const LoginForm = () => {
       });
 
       // Use replace to prevent back button issues on mobile
-      navigate('/', { replace: true });
+      if (isMobile) {
+        window.location.href = '/';
+      } else {
+        navigate('/', { replace: true });
+      }
     } catch (error: any) {
       console.error('Login error:', error);
       // Clear any existing session
@@ -165,15 +174,23 @@ const LoginForm = () => {
             className="w-full"
             required
             disabled={loading}
+            autoComplete="off"
           />
         </div>
 
         <Button
           type="submit"
-          className="w-full bg-dashboard-accent1 hover:bg-dashboard-accent1/90"
+          className="w-full bg-dashboard-accent1 hover:bg-dashboard-accent1/90 relative"
           disabled={loading}
         >
-          {loading ? 'Logging in...' : 'Login'}
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Logging in...
+            </>
+          ) : (
+            'Login'
+          )}
         </Button>
       </form>
     </div>

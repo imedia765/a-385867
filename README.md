@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# Welcome to your R2D2 project
 
 ## Project info
 

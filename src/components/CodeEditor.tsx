@@ -1,4 +1,5 @@
 import React from 'react';
+import Editor from "@monaco-editor/react";
 import { Card } from '@/components/ui/card';
 
 interface CodeEditorProps {
@@ -7,13 +8,29 @@ interface CodeEditorProps {
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange }) => {
+  const handleEditorChange = (value: string | undefined) => {
+    if (value !== undefined) {
+      onChange(value);
+    }
+  };
+
   return (
-    <Card className="code-editor p-4 h-[500px] overflow-auto">
-      <textarea
+    <Card className="code-editor h-[500px] overflow-hidden">
+      <Editor
+        height="100%"
+        defaultLanguage="typescript"
+        theme="vs-dark"
         value={code}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full h-full bg-transparent resize-none focus:outline-none text-foreground"
-        spellCheck={false}
+        onChange={handleEditorChange}
+        options={{
+          minimap: { enabled: false },
+          fontSize: 14,
+          lineNumbers: 'on',
+          roundedSelection: false,
+          scrollBeyondLastLine: false,
+          automaticLayout: true,
+          wordWrap: 'on'
+        }}
       />
     </Card>
   );

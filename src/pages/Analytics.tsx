@@ -1,8 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, LineChart, Line } from 'recharts';
-import { Activity, Users, Code, GitBranch, Clock, Cpu, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { Activity, Users, Code, GitBranch, Clock, Cpu, CheckCircle2, XCircle, AlertCircle, TrendingUp, Bug, Zap } from 'lucide-react';
 import { TestResults } from '@/components/analytics/TestResults';
 import { TestCoverage } from '@/components/analytics/TestCoverage';
 import { PerformanceMetrics } from '@/components/analytics/PerformanceMetrics';
@@ -28,11 +26,16 @@ const Analytics = () => {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Project Analytics</h1>
-        <div className="text-sm text-muted-foreground">Last updated: {new Date().toLocaleString()}</div>
+        <div>
+          <h1 className="text-3xl font-bold">Project Analytics</h1>
+          <p className="text-muted-foreground mt-1">Performance metrics and insights</p>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          Last updated: {new Date().toLocaleString()}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Commits</CardTitle>
@@ -40,9 +43,13 @@ const Analytics = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">25</div>
-            <p className="text-xs text-muted-foreground">+12% from last week</p>
+            <p className="text-xs text-green-500 flex items-center gap-1">
+              <TrendingUp className="h-3 w-3" />
+              +12% from last week
+            </p>
           </CardContent>
         </Card>
+        
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Active Contributors</CardTitle>
@@ -50,71 +57,49 @@ const Analytics = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">8</div>
-            <p className="text-xs text-muted-foreground">+2 new this month</p>
+            <p className="text-xs text-green-500 flex items-center gap-1">
+              <TrendingUp className="h-3 w-3" />
+              +2 new this month
+            </p>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Lines of Code</CardTitle>
-            <Code className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Open Issues</CardTitle>
+            <Bug className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12.5k</div>
-            <p className="text-xs text-muted-foreground">770 lines added today</p>
+            <div className="text-2xl font-bold">12</div>
+            <p className="text-xs text-red-500 flex items-center gap-1">
+              <TrendingUp className="h-3 w-3" />
+              +3 since yesterday
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Build Time</CardTitle>
+            <Zap className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">45s</div>
+            <p className="text-xs text-green-500 flex items-center gap-1">
+              <TrendingUp className="h-3 w-3" />
+              -5s improvement
+            </p>
           </CardContent>
         </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Code Activity</CardTitle>
-            <CardDescription>Daily commit activity and line changes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mockData.codeActivity}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="commits" fill="#8884d8" name="Commits" />
-                  <Bar dataKey="lines" fill="#82ca9d" name="Lines Changed" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Performance Metrics</CardTitle>
-            <CardDescription>Server load and memory usage</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={mockData.performance}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="load" stroke="#8884d8" name="CPU Load %" />
-                  <Line type="monotone" dataKey="memory" stroke="#82ca9d" name="Memory Usage %" />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        <PerformanceMetrics />
+        <TestCoverage />
       </div>
 
       <div className="space-y-6">
         <TestResults />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <TestCoverage />
-          <PerformanceMetrics />
-        </div>
       </div>
     </div>
   );

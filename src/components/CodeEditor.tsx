@@ -15,7 +15,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange }) => {
   };
 
   return (
-    <Card className="code-editor h-[500px] overflow-hidden">
+    <Card className="w-full h-[500px] overflow-hidden border border-border">
       <Editor
         height="100%"
         defaultLanguage="typescript"
@@ -29,7 +29,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange }) => {
           roundedSelection: false,
           scrollBeyondLastLine: false,
           automaticLayout: true,
-          wordWrap: 'on'
+          wordWrap: 'on',
+          padding: { top: 10 }
         }}
       />
     </Card>

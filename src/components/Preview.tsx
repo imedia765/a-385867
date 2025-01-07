@@ -12,7 +12,7 @@ interface PreviewProps {
 
 export const Preview: React.FC<PreviewProps> = ({ content, logs = [], error }) => {
   return (
-    <Card className="h-[500px]">
+    <Card className="w-full h-[500px] border border-border">
       <ScrollArea className="h-full">
         <div className="p-4 space-y-4">
           {error && (
@@ -22,8 +22,8 @@ export const Preview: React.FC<PreviewProps> = ({ content, logs = [], error }) =
             </Alert>
           )}
           
-          <div className="prose prose-invert">
-            <pre className="language-typescript">
+          <div className="prose prose-invert max-w-none">
+            <pre className="language-typescript bg-muted p-4 rounded-md overflow-x-auto">
               <code>{content}</code>
             </pre>
           </div>

@@ -5,7 +5,6 @@ import { CodeEditor } from '@/components/CodeEditor';
 import { Preview } from '@/components/Preview';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Cpu, AlertCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -16,6 +15,7 @@ import { Button } from '@/components/ui/button';
 const CodeGenerator = () => {
   const [code, setCode] = useState('// Your generated code will appear here');
   const [prompt, setPrompt] = useState('');
+  const [logs, setLogs] = useState<string[]>([]);
   const { 
     providers, 
     selectedProvider, 
@@ -33,10 +33,20 @@ const CodeGenerator = () => {
   const handleGenerateCode = async () => {
     if (!prompt.trim()) return;
     
-    const result = await generateCode(prompt);
-    if (result) {
-      setCode(result.result);
-      setPrompt('');
+    setLogs([]); // Clear previous logs
+    try {
+      const result = await generateCode(prompt);
+      if (result) {
+        setCode(result.result);
+        // Add any compilation or execution logs
+        if (result.logs) {
+          setLogs(prev => [...prev, ...result.logs]);
+        }
+        setPrompt('');
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      setLogs(prev => [...prev, `Error: ${errorMessage}`]);
     }
   };
 
@@ -95,7 +105,10 @@ const CodeGenerator = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setCode('// Your generated code will appear here')}
+                          onClick={() => {
+                            setCode('// Your generated code will appear here');
+                            setLogs([]);
+                          }}
                         >
                           Clear
                         </Button>
@@ -106,8 +119,8 @@ const CodeGenerator = () => {
                   <ResizableHandle withHandle />
                   <ResizablePanel defaultSize={50}>
                     <div className="space-y-2">
-                      <h2 className="text-xl font-semibold">Preview</h2>
-                      <Preview content={code} />
+                      <h2 className="text-xl font-semibold">Preview & Logs</h2>
+                      <Preview content={code} logs={logs} error={error} />
                     </div>
                   </ResizablePanel>
                 </ResizablePanelGroup>

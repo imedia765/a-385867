@@ -4,23 +4,8 @@ import { Activity, Users, Code, GitBranch, Clock, Cpu, CheckCircle2, XCircle, Al
 import { TestResults } from '@/components/analytics/TestResults';
 import { TestCoverage } from '@/components/analytics/TestCoverage';
 import { PerformanceMetrics } from '@/components/analytics/PerformanceMetrics';
-
-const mockData = {
-  codeActivity: [
-    { name: 'Mon', commits: 4, lines: 120 },
-    { name: 'Tue', commits: 3, lines: 80 },
-    { name: 'Wed', commits: 7, lines: 230 },
-    { name: 'Thu', commits: 5, lines: 150 },
-    { name: 'Fri', commits: 6, lines: 190 },
-  ],
-  performance: [
-    { name: '12:00', load: 45, memory: 30 },
-    { name: '13:00', load: 52, memory: 35 },
-    { name: '14:00', load: 48, memory: 32 },
-    { name: '15:00', load: 70, memory: 45 },
-    { name: '16:00', load: 55, memory: 38 },
-  ]
-};
+import { CodeQualityMetrics } from '@/components/analytics/CodeQualityMetrics';
+import { CommitActivityChart } from '@/components/analytics/CommitActivityChart';
 
 const Analytics = () => {
   return (
@@ -94,8 +79,13 @@ const Analytics = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <PerformanceMetrics />
+        <CommitActivityChart />
         <TestCoverage />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <PerformanceMetrics />
+        <CodeQualityMetrics />
       </div>
 
       <div className="space-y-6">
